@@ -1,0 +1,117 @@
+name: Build & Release heytea-diy
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:   # 手动触发
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: macos-15
+            platform: macos-arm64
+          - image: macos-15-intel
+            platform: macos-x86_64
+          - image: windows-2025
+            platform: windows
+
+    runs-on: ${{ matrix.image }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then
+            pip install -r requirements.txt
+          fi
+          pip install pyinstaller
+        shell: bash
+
+      - name: Build with PyInstaller
+        run: |
+          pyinstaller heytea-diy.spec
+        shell: bash
+
+      # 打包 Windows
+      - name: Package artifact (Windows)
+        if: startsWith(matrix.platform, 'windows')
+        run: |
+          New-Item -ItemType Directory -Force -Path release | Out-Null
+          # 复制可执行文件
+          Copy-Item dist/heytea-diy.exe release/
+          # 复制脚本
+          if (Test-Path heytea-diy.ps1) { Copy-Item heytea-diy.ps1 release/ }
+          if (Test-Path clean.ps1)     { Copy-Item clean.ps1     release/ }
+
+          $zipName = "heytea-diy-${{ matrix.platform }}.zip"
+          Compress-Archive -Path release/* -DestinationPath "release/$zipName" -Force
+        shell: pwsh
+
+      # 打包 macOS（ARM / Intel）
+      - name: Package artifact (macOS)
+        if: startsWith(matrix.platform, 'macos')
+        run: |
+          mkdir -p release
+          # 复制可执行文件
+          cp dist/heytea-diy release/ 2>/dev/null || true
+          # 复制脚本
+          [ -f heytea-diy.sh ] && cp heytea-diy.sh release/
+          [ -f clean.sh ] && cp clean.sh release/
+
+          zipName="heytea-diy-${{ matrix.platform }}.zip"
+          cd release
+          zip -r "$zipName" .
+        shell: bash
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: heytea-diy-${{ matrix.platform }}
+          path: release/heytea-diy-${{ matrix.platform }}.zip
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Prepare release assets
+        run: |
+          cp artifacts/heytea-diy-windows-x64/heytea-diy-windows.zip .
+          cp artifacts/heytea-diy-macos-arm64/heytea-diy-macos-arm64.zip .
+          cp artifacts/heytea-diy-macos-intel/heytea-diy-macos-x86_64.zip .
+        shell: bash
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.ref_name }}
+          name: heytea-diy ${{ github.ref_name }}
+          body: |
+            自动构建发布：${{ github.ref_name }}
+
+            包含：
+            - Windows x64: heytea-diy-windows-x64.zip
+            - Windows x86: heytea-diy-windows-x86.zip
+            - macOS ARM64: heytea-diy-macos-arm64.zip
+            - macOS Intel: heytea-diy-macos-intel.zip
+          artifacts: "heytea-diy-windows.zip,heytea-diy-macos-arm64.zip,heytea-diy-macos-x86_64.zip"
+          draft: false
+          prerelease: false
