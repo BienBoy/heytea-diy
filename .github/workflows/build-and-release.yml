@@ -92,7 +92,7 @@ jobs:
         run: |
           cp artifacts/heytea-diy-windows/heytea-diy-windows.zip .
           cp artifacts/heytea-diy-macos-arm64/heytea-diy-macos-arm64.zip .
-          cp artifacts/heytea-diy-macos-intel/heytea-diy-macos-x86_64.zip .
+          cp artifacts/heytea-diy-macos-x86_64/heytea-diy-macos-x86_64.zip .
         shell: bash
 
       - name: Create GitHub Release
