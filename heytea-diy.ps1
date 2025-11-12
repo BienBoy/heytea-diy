@@ -43,7 +43,7 @@ $proxyPort = $P          # 监听端口
 
 # mitmproxy 证书目录（Windows 默认：C:\Users\xxx\.mitmproxy）
 $mitmDir = Join-Path $env:USERPROFILE ".mitmproxy"
-$caFileCer  = Join-Path $mitmDir "mitmproxy-ca-cert.p12"  # 用于 certutil 导入
+$caFileCer  = Join-Path $mitmDir "mitmproxy-ca-cert.cer"  # 用于 certutil 导入
 
 # heytea-diy.exe 路径（假设与脚本在同一目录）
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path

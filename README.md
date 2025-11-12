@@ -31,10 +31,12 @@ Start-Process PowerShell -Verb RunAs "-noexit -command Set-Location -LiteralPath
 如果从未在这台机器上跑过自定义脚本，可能需要先执行（只需一次）：
 
 ```powershell
-Set-ExecutionPolicy RemoteSigned -Scope CurrentUser
+Set-ExecutionPolicy RemoteSigned
 ```
 
 根据提示选择 `Y`。
+
+如果还是不能运行脚本，可以使用 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass 命令临时允许当前会话运行脚本。
 
 ![允许执行脚本](assets/允许执行脚本.png)
 
