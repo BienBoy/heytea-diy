@@ -97,7 +97,7 @@ if (Test-MitMCertInstalled -CertPath $caFileCer) {
     Write-Host "未在 Root 存储中发现该 mitmproxy 证书，正在导入..." -ForegroundColor Cyan
 
     $certutilCmd = "certutil.exe"
-    $certArgs    = "-addstore", "-f", "Root", $caFileCer
+    $certArgs    = "-addstore", "-f", "Root", "`"$caFileCer`""
 
     $proc = Start-Process -FilePath $certutilCmd -ArgumentList $certArgs -Wait -PassThru -WindowStyle Hidden
 
