@@ -64,6 +64,10 @@ Set-ExecutionPolicy RemoteSigned
 
 ![允许执行脚本](assets/允许执行脚本.png)
 
+> 存在此种情况，请手动运行exe文件
+<img width="1062" height="98" alt="image" src="https://github.com/user-attachments/assets/d9fdfe3e-a4c8-42a8-bc81-64dcd6d5f10f" />
+
+
 **运行配置脚本**
 
 在终端中执行：
@@ -121,7 +125,7 @@ http://mitm.it
 当你不再需要代理时，可以执行关闭脚本：
 
 ```powershell
-\clean.ps1
+.\clean.ps1
 ```
 
 ---
